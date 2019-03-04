@@ -119,9 +119,10 @@ Plane ConstructFromPointNormal(const Vector3f &Pt, const Vector3f &Normal) {
 	Result.a = NormalizedNormal.x;
 	Result.b = NormalizedNormal.y;
 	Result.c = NormalizedNormal.z;
-	Result.d = -Dot(Pt, NormalizedNormal);
-	Result.normal = Normal;
-	//Result.normal = NormalizedNormal;
+	//Result.d = -Dot(Pt, NormalizedNormal);
+	Result.d = Dot(Pt, NormalizedNormal);
+	//Result.normal = Normal;
+	Result.normal = NormalizedNormal;
 	return Result;
 }
 
@@ -135,9 +136,11 @@ Vector3f get3PlaneIntersection(const Plane& plane1, const Plane& plane2,
 	zero.y = 0;
 	zero.z = 0;
 	if (det == 0) {
+		cout<<"determinant zero, same or parallel planes provided!"<<endl;
 		return zero;
 	}
 
+	//cout<<"plane 1 d is : "<<plane1.d<<endl;
 	return (Cross(plane2.normal, plane3.normal) * -plane1.d
 			+ Cross(plane3.normal, plane1.normal) * -plane2.d
 			+ Cross(plane1.normal, plane2.normal) * -plane3.d) / det;
@@ -159,6 +162,7 @@ vector<Mat> cameraPos;
 
 vector<Vector3f> cameraOrigins;
 vector<Vector3f> planeNormals;
+vector<Plane> cameraPlanes;
 
 int main() {
 
@@ -376,11 +380,16 @@ int main() {
 		Vector3f planeNormal;
 		planeNormal.x = Rtrans.at<float>(0, 2);
 		planeNormal.y = Rtrans.at<float>(1, 2);
+		//planeNormal.y = 0.1;
 		planeNormal.z = Rtrans.at<float>(2, 2);
+
+		Plane cameraPlane = ConstructFromPointNormal(cameraOrigin, planeNormal);
 
 		cameraOrigins.push_back(cameraOrigin);
 		planeNormals.push_back(planeNormal);
-
+		cameraPlanes.push_back(cameraPlane);
+		float test = Dot(cameraOrigins[i], planeNormals[i]);
+		//cout<<"test d is : "<<test<<endl;
 //		Rodrigues(R[i].t(), RvecTemp);
 //		Rvec.push_back(RvecTemp);
 
@@ -389,10 +398,52 @@ int main() {
 //		cout << "camera position in world: " << cameraPosition << endl;
 //		cout << "camera plane normal in world: " << RvecTemp << endl;
 
-		cout << "camera position in world: " << cameraOrigin.x<<", "<<cameraOrigin.y<<", "<<cameraOrigin.z << endl;
-		cout << "camera plane normal in world: " << planeNormal.x<<", "<<planeNormal.y<<", "<<planeNormal.z << endl;
+		cout << "camera position in world: " << cameraOrigin.x << ", "
+				<< cameraOrigin.y << ", " << cameraOrigin.z << endl;
+		cout << "camera plane normal in world: " << planeNormal.x << ", "
+				<< planeNormal.y << ", " << planeNormal.z << endl;
 
 	}
+
+	Vector3f intersection012 = get3PlaneIntersection(cameraPlanes[0],
+			cameraPlanes[1], cameraPlanes[2]);
+	cout << intersection012.x << ", " << intersection012.y << ", "
+			<< intersection012.z << endl;
+
+	Vector3f intersection123 = get3PlaneIntersection(cameraPlanes[1],
+			cameraPlanes[2], cameraPlanes[3]);
+	cout << intersection123.x << ", " << intersection123.y << ", "
+			<< intersection123.z << endl;
+
+	Vector3f intersection234 = get3PlaneIntersection(cameraPlanes[2],
+			cameraPlanes[3], cameraPlanes[4]);
+	cout << intersection234.x << ", " << intersection234.y << ", "
+			<< intersection234.z << endl;
+
+	Vector3f intersection345 = get3PlaneIntersection(cameraPlanes[3],
+			cameraPlanes[4], cameraPlanes[5]);
+	cout << intersection345.x << ", " << intersection345.y << ", "
+			<< intersection345.z << endl;
+
+	Vector3f intersection456 = get3PlaneIntersection(cameraPlanes[4],
+			cameraPlanes[5], cameraPlanes[6]);
+	cout << intersection456.x << ", " << intersection456.y << ", "
+			<< intersection456.z << endl;
+
+	Vector3f intersection567 = get3PlaneIntersection(cameraPlanes[5],
+			cameraPlanes[6], cameraPlanes[7]);
+	cout << intersection567.x << ", " << intersection567.y << ", "
+			<< intersection567.z << endl;
+	Vector3f intersection1615 = get3PlaneIntersection(cameraPlanes[1],
+				cameraPlanes[6], cameraPlanes[15]);
+		cout << intersection1615.x << ", " << intersection1615.y << ", "
+				<< intersection1615.z << endl;
+	Vector3f intersectiontest = get3PlaneIntersection(cameraPlanes[5],
+			cameraPlanes[5], cameraPlanes[5]);
+	cout << intersectiontest.x << ", " << intersectiontest.y << ", "
+			<< intersectiontest.z << endl;
+
+
 
 	return 0;
 }
