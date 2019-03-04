@@ -18,14 +18,6 @@ typedef struct {
 	float x, y, z;
 } Vector3f;
 
-//Vector3f constructVector3f(const Vector3f &V, float _x, float _y, float _z)
-//{
-//    V.x = _x;
-//    V.y = _y;
-//    V.z = _z;
-//    return V;
-//}
-
 Vector3f Normalize(const Vector3f &V) {
 	float Len = sqrt(V.x * V.x + V.y * V.y + V.z * V.z);
 	if (Len == 0.0f) {
@@ -136,7 +128,7 @@ Vector3f get3PlaneIntersection(const Plane& plane1, const Plane& plane2,
 	zero.y = 0;
 	zero.z = 0;
 	if (det == 0) {
-		cout<<"determinant zero, same or parallel planes provided!"<<endl;
+		cout << "determinant zero, same or parallel planes provided!" << endl;
 		return zero;
 	}
 
@@ -166,7 +158,8 @@ vector<Plane> cameraPlanes;
 
 int main() {
 
-	cv::String path("dinoSR/*.png");
+	//cv::String path("dinoSR/*.png");
+	cv::String path("birdR/*.pgm");
 	vector<cv::String> fn;
 	vector<cv::Mat> imageData;
 
@@ -179,7 +172,12 @@ int main() {
 		if (im.empty())
 			continue; //only proceed if sucsessful
 
+		im = ~im; //for bird data
+
 		imageData.push_back(im);
+//		cv::namedWindow("images", cv::WINDOW_AUTOSIZE);
+//		cv::imshow("image", im);
+//		waitKey(0);
 
 		Vec3b bgcolor = im.at<Vec3b>(Point(1, 1));
 
@@ -210,9 +208,9 @@ int main() {
 		cv::threshold(grayscaleMat, binaryMat, 20, 255, cv::THRESH_BINARY);
 
 		//Show the results
-		//cv::namedWindow("silhouettes", cv::WINDOW_AUTOSIZE);
-		//cv::imshow("sil", binaryMat);
-		//waitKey(0);
+//		cv::namedWindow("silhouettes", cv::WINDOW_AUTOSIZE);
+//		cv::imshow("sil", binaryMat);
+//		waitKey(0);
 
 		//______________________-------------------->>>
 
@@ -302,7 +300,8 @@ int main() {
 
 	vector<string> fid;
 
-	std::ifstream txtfile("dinoSR/dinoSR_par.txt");
+	//std::ifstream txtfile("dinoSR/dinoSR_par.txt");
+	std::ifstream txtfile("birdR/birdR_par.txt");
 	cout << "Reading text file" << endl;
 	//std::ifstream txtfile("templeSR/templeSR_par.txt");
 	std::string line;
@@ -326,51 +325,110 @@ int main() {
 	while (i < linedata.size()) {
 		fid.push_back(linedata[i]);
 		i++;
-		//Put data into K
-		Mat kk(3, 3, cv::DataType<float>::type, Scalar(1));
+
+		//bird Data M's (projection Matrix)
+		Mat P(3, 4, cv::DataType<float>::type, Scalar(1));
 		for (int j = 0; j < 3; j++) {
-			for (int k = 0; k < 3; k++) {
+			for (int k = 0; k < 4; k++) {
 				float temp = strtof((linedata[i]).c_str(), 0);
 
-				kk.at<float>(j, k) = temp;
+				P.at<float>(j, k) = temp;
 				i++;
 			}
 		}
-		K.push_back(kk);
+		M.push_back(P);
 
-		Mat rot(3, 3, cv::DataType<float>::type, Scalar(1));
-		Mat Rttemp(3, 4, cv::DataType<float>::type, Scalar(1));
-		for (int j = 0; j < 3; j++) {
-			for (int k = 0; k < 3; k++) {
-				float temp = strtof((linedata[i]).c_str(), 0);
-
-				Rttemp.at<float>(j, k) = temp;
-				rot.at<float>(j, k) = temp;
-				i++;
-			}
-		}
-
-		R.push_back(rot);
-
-		int k = 3;
-		Mat ttemp(3, 1, cv::DataType<float>::type, Scalar(1));
-		for (int j = 0; j < 3; j++) {
-			float temp = strtof((linedata[i]).c_str(), 0);
-			Rttemp.at<float>(j, k) = temp;
-
-			ttemp.at<float>(j, 0) = temp;
-			i++;
-		}
-		Rt.push_back(Rttemp);
-		t.push_back(ttemp);
+//		//Put data into K
+//		Mat kk(3, 3, cv::DataType<float>::type, Scalar(1));
+//		for (int j = 0; j < 3; j++) {
+//			for (int k = 0; k < 3; k++) {
+//				float temp = strtof((linedata[i]).c_str(), 0);
+//
+//				kk.at<float>(j, k) = temp;
+//				i++;
+//			}
+//		}
+//		K.push_back(kk);
+//
+//		Mat rot(3, 3, cv::DataType<float>::type, Scalar(1));
+//		Mat Rttemp(3, 4, cv::DataType<float>::type, Scalar(1));
+//		for (int j = 0; j < 3; j++) {
+//			for (int k = 0; k < 3; k++) {
+//				float temp = strtof((linedata[i]).c_str(), 0);
+//
+//				Rttemp.at<float>(j, k) = temp;
+//				rot.at<float>(j, k) = temp;
+//				i++;
+//			}
+//		}
+//
+//		R.push_back(rot);
+//
+//		int k = 3;
+//		Mat ttemp(3, 1, cv::DataType<float>::type, Scalar(1));
+//		for (int j = 0; j < 3; j++) {
+//			float temp = strtof((linedata[i]).c_str(), 0);
+//			Rttemp.at<float>(j, k) = temp;
+//
+//			ttemp.at<float>(j, 0) = temp;
+//			i++;
+//		}
+//		Rt.push_back(Rttemp);
+//		t.push_back(ttemp);
 
 	}
 
 	// Compute M's
-	for (int i = 0; i < N; i++) {
+//	for (int i = 0; i < N; i++) {
+//
+//		Mat Mtemp = K[i] * Rt[i];
+//		M.push_back(Mtemp);
+//		Mat cameraPosition = -R[i].t() * t[i];
+//		Mat Rtrans = R[i].t();
+//		Vector3f cameraOrigin;
+//		cameraOrigin.x = cameraPosition.at<float>(0, 0);
+//		cameraOrigin.y = cameraPosition.at<float>(0, 1);
+//		cameraOrigin.z = cameraPosition.at<float>(0, 2);
+//		Vector3f planeNormal;
+//		planeNormal.x = Rtrans.at<float>(0, 2);
+//		planeNormal.y = Rtrans.at<float>(1, 2);
+//		//planeNormal.y = 0.1;
+//		planeNormal.z = Rtrans.at<float>(2, 2);
+//
+//		Plane cameraPlane = ConstructFromPointNormal(cameraOrigin, planeNormal);
+//
+//		cameraOrigins.push_back(cameraOrigin);
+//		planeNormals.push_back(planeNormal);
+//		cameraPlanes.push_back(cameraPlane);
+//		float test = Dot(cameraOrigins[i], planeNormals[i]);
+//		//cout<<"test d is : "<<test<<endl;
+////		Rodrigues(R[i].t(), RvecTemp);
+////		Rvec.push_back(RvecTemp);
+//
+//		//cameraPos.push_back(cameraPosition);
+//
+////		cout << "camera position in world: " << cameraPosition << endl;
+////		cout << "camera plane normal in world: " << RvecTemp << endl;
+//
+//		cout << "camera position in world: " << cameraOrigin.x << ", "
+//				<< cameraOrigin.y << ", " << cameraOrigin.z << endl;
+//		cout << "camera plane normal in world: " << planeNormal.x << ", "
+//				<< planeNormal.y << ", " << planeNormal.z << endl;
+//
+//	}
 
-		Mat Mtemp = K[i] * Rt[i];
-		M.push_back(Mtemp);
+	//for bird
+	for (int i = 0; i < N; i++) {
+		Mat rotm, tvec, kk;
+		decomposeProjectionMatrix(M[i], kk, rotm, tvec);
+		K.push_back(kk);
+		R.push_back(rotm);
+		Mat ttemp(3, 1, cv::DataType<float>::type, Scalar(1));
+		ttemp.at<float>(0, 0) = tvec.at<float>(0, 0);
+		ttemp.at<float>(1, 0) = tvec.at<float>(1, 0);
+		ttemp.at<float>(2, 0) = tvec.at<float>(2, 0);
+		t.push_back(ttemp);
+
 		Mat cameraPosition = -R[i].t() * t[i];
 		Mat Rtrans = R[i].t();
 		Vector3f cameraOrigin;
@@ -380,7 +438,6 @@ int main() {
 		Vector3f planeNormal;
 		planeNormal.x = Rtrans.at<float>(0, 2);
 		planeNormal.y = Rtrans.at<float>(1, 2);
-		//planeNormal.y = 0.1;
 		planeNormal.z = Rtrans.at<float>(2, 2);
 
 		Plane cameraPlane = ConstructFromPointNormal(cameraOrigin, planeNormal);
@@ -388,15 +445,6 @@ int main() {
 		cameraOrigins.push_back(cameraOrigin);
 		planeNormals.push_back(planeNormal);
 		cameraPlanes.push_back(cameraPlane);
-		float test = Dot(cameraOrigins[i], planeNormals[i]);
-		//cout<<"test d is : "<<test<<endl;
-//		Rodrigues(R[i].t(), RvecTemp);
-//		Rvec.push_back(RvecTemp);
-
-		//cameraPos.push_back(cameraPosition);
-
-//		cout << "camera position in world: " << cameraPosition << endl;
-//		cout << "camera plane normal in world: " << RvecTemp << endl;
 
 		cout << "camera position in world: " << cameraOrigin.x << ", "
 				<< cameraOrigin.y << ", " << cameraOrigin.z << endl;
@@ -409,39 +457,6 @@ int main() {
 			cameraPlanes[1], cameraPlanes[2]);
 	cout << intersection012.x << ", " << intersection012.y << ", "
 			<< intersection012.z << endl;
-
-	Vector3f intersection123 = get3PlaneIntersection(cameraPlanes[1],
-			cameraPlanes[2], cameraPlanes[3]);
-	cout << intersection123.x << ", " << intersection123.y << ", "
-			<< intersection123.z << endl;
-
-	Vector3f intersection234 = get3PlaneIntersection(cameraPlanes[2],
-			cameraPlanes[3], cameraPlanes[4]);
-	cout << intersection234.x << ", " << intersection234.y << ", "
-			<< intersection234.z << endl;
-
-	Vector3f intersection345 = get3PlaneIntersection(cameraPlanes[3],
-			cameraPlanes[4], cameraPlanes[5]);
-	cout << intersection345.x << ", " << intersection345.y << ", "
-			<< intersection345.z << endl;
-
-	Vector3f intersection456 = get3PlaneIntersection(cameraPlanes[4],
-			cameraPlanes[5], cameraPlanes[6]);
-	cout << intersection456.x << ", " << intersection456.y << ", "
-			<< intersection456.z << endl;
-
-	Vector3f intersection567 = get3PlaneIntersection(cameraPlanes[5],
-			cameraPlanes[6], cameraPlanes[7]);
-	cout << intersection567.x << ", " << intersection567.y << ", "
-			<< intersection567.z << endl;
-	Vector3f intersection1615 = get3PlaneIntersection(cameraPlanes[1],
-				cameraPlanes[6], cameraPlanes[15]);
-		cout << intersection1615.x << ", " << intersection1615.y << ", "
-				<< intersection1615.z << endl;
-	Vector3f intersectiontest = get3PlaneIntersection(cameraPlanes[5],
-			cameraPlanes[5], cameraPlanes[5]);
-	cout << intersectiontest.x << ", " << intersectiontest.y << ", "
-			<< intersectiontest.z << endl;
 
 
 
