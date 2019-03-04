@@ -14,11 +14,141 @@
 using namespace cv;
 using namespace std;
 
+typedef struct {
+	float x, y, z;
+} Vector3f;
+
+//Vector3f constructVector3f(const Vector3f &V, float _x, float _y, float _z)
+//{
+//    V.x = _x;
+//    V.y = _y;
+//    V.z = _z;
+//    return V;
+//}
+
+Vector3f Normalize(const Vector3f &V) {
+	float Len = sqrt(V.x * V.x + V.y * V.y + V.z * V.z);
+	if (Len == 0.0f) {
+		return V;
+	} else {
+		float Factor = 1.0f / Len;
+		Vector3f result;
+		result.x = V.x * Factor;
+		result.y = V.y * Factor;
+		result.z = V.z * Factor;
+		//return Vector3f(V.x * Factor, V.y * Factor, V.z * Factor);
+		return result;
+	}
+}
+
+float Dot(const Vector3f &Left, const Vector3f &Right) {
+	return (Left.x * Right.x + Left.y * Right.y + Left.z * Right.z);
+}
+
+Vector3f Cross(const Vector3f &Left, const Vector3f &Right) {
+	Vector3f Result;
+	Result.x = Left.y * Right.z - Left.z * Right.y;
+	Result.y = Left.z * Right.x - Left.x * Right.z;
+	Result.z = Left.x * Right.y - Left.y * Right.x;
+	return Result;
+}
+
+Vector3f operator *(const Vector3f &Left, float Right) {
+	Vector3f result;
+	result.x = Left.x * Right;
+	result.y = Left.y * Right;
+	result.z = Left.z * Right;
+	return result;
+}
+
+Vector3f operator *(float Left, const Vector3f &Right) {
+
+	Vector3f result;
+	result.x = Right.x * Left;
+	result.y = Right.y * Left;
+	result.z = Right.z * Left;
+	return result;
+
+}
+
+Vector3f operator /(const Vector3f &Left, float Right) {
+
+	Vector3f result;
+	result.x = Left.x / Right;
+	result.y = Left.y / Right;
+	result.z = Left.z / Right;
+	return result;
+
+}
+
+Vector3f operator +(const Vector3f &Left, const Vector3f &Right) {
+
+	Vector3f result;
+	result.x = Left.x + Right.x;
+	result.y = Left.y + Right.y;
+	result.z = Left.z + Right.z;
+	return result;
+}
+
+Vector3f operator -(const Vector3f &Left, const Vector3f &Right) {
+	Vector3f result;
+	result.x = Left.x - Right.x;
+	result.y = Left.y - Right.y;
+	result.z = Left.z - Right.z;
+	return result;
+}
+
+Vector3f operator -(const Vector3f &V) {
+	Vector3f result;
+	result.x = -V.x;
+	result.y = -V.y;
+	result.z = -V.z;
+	return result;
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+
+typedef struct {
+	float a, b, c, d;
+	Vector3f normal;
+} Plane;
+
+Plane ConstructFromPointNormal(const Vector3f &Pt, const Vector3f &Normal) {
+	Plane Result;
+	Vector3f NormalizedNormal = Normalize(Normal);
+	Result.a = NormalizedNormal.x;
+	Result.b = NormalizedNormal.y;
+	Result.c = NormalizedNormal.z;
+	Result.d = -Dot(Pt, NormalizedNormal);
+	Result.normal = Normal;
+	//Result.normal = NormalizedNormal;
+	return Result;
+}
+
+Vector3f get3PlaneIntersection(const Plane& plane1, const Plane& plane2,
+		const Plane& plane3) {
+	Mat C =
+			(Mat_<float>(3, 3) << plane1.normal.x, plane1.normal.y, plane1.normal.z, plane2.normal.x, plane2.normal.y, plane2.normal.z, plane3.normal.x, plane3.normal.y, plane3.normal.z);
+	float det = determinant(C);
+	Vector3f zero;
+	zero.x = 0;
+	zero.y = 0;
+	zero.z = 0;
+	if (det == 0) {
+		return zero;
+	}
+
+	return (Cross(plane2.normal, plane3.normal) * -plane1.d
+			+ Cross(plane3.normal, plane1.normal) * -plane2.d
+			+ Cross(plane1.normal, plane2.normal) * -plane3.d) / det;
+
+}
 
 int N;
 int total_number;
 vector<cv::Mat> M; //params
 vector<cv::Mat> silhouettes;
+//Vec3f ve;
 
 vector<Mat> K;
 vector<Mat> Rt;
@@ -26,6 +156,9 @@ vector<Mat> R;
 vector<Mat> Rvec;
 vector<Mat> t;
 vector<Mat> cameraPos;
+
+vector<Vector3f> cameraOrigins;
+vector<Vector3f> planeNormals;
 
 int main() {
 
@@ -142,12 +275,12 @@ int main() {
 		Point top_right(x + width, y);
 		Point bottom_left(x, y + height);
 		Point bottom_right(x + width, y + height);
-		Point mid(x+width/2, y+height/2);
+		Point mid(x + width / 2, y + height / 2);
 
 		cout << top_left << ", " << top_right << ", " << ", " << bottom_left
 				<< ", " << bottom_right << endl;
 
-		cout<< mid<<endl;
+		cout << mid << endl;
 
 		/// Show in a window
 //		namedWindow("Contours", CV_WINDOW_AUTOSIZE);
@@ -166,7 +299,7 @@ int main() {
 	vector<string> fid;
 
 	std::ifstream txtfile("dinoSR/dinoSR_par.txt");
-	cout<<"Reading text file"<<endl;
+	cout << "Reading text file" << endl;
 	//std::ifstream txtfile("templeSR/templeSR_par.txt");
 	std::string line;
 	vector<string> linedata;
@@ -201,7 +334,6 @@ int main() {
 		}
 		K.push_back(kk);
 
-
 		Mat rot(3, 3, cv::DataType<float>::type, Scalar(1));
 		Mat Rttemp(3, 4, cv::DataType<float>::type, Scalar(1));
 		for (int j = 0; j < 3; j++) {
@@ -209,7 +341,7 @@ int main() {
 				float temp = strtof((linedata[i]).c_str(), 0);
 
 				Rttemp.at<float>(j, k) = temp;
-				rot.at<float>(j,k) =temp;
+				rot.at<float>(j, k) = temp;
 				i++;
 			}
 		}
@@ -222,7 +354,7 @@ int main() {
 			float temp = strtof((linedata[i]).c_str(), 0);
 			Rttemp.at<float>(j, k) = temp;
 
-			ttemp.at<float>(j,0) = temp;
+			ttemp.at<float>(j, 0) = temp;
 			i++;
 		}
 		Rt.push_back(Rttemp);
@@ -235,19 +367,32 @@ int main() {
 
 		Mat Mtemp = K[i] * Rt[i];
 		M.push_back(Mtemp);
-		Mat cameraPosition = -R[i].t()* t[i];
-		Mat RvecTemp;
-		Rodrigues(R[i].t(),RvecTemp);
-		Rvec.push_back(RvecTemp);
+		Mat cameraPosition = -R[i].t() * t[i];
+		Mat Rtrans = R[i].t();
+		Vector3f cameraOrigin;
+		cameraOrigin.x = cameraPosition.at<float>(0, 0);
+		cameraOrigin.y = cameraPosition.at<float>(0, 1);
+		cameraOrigin.z = cameraPosition.at<float>(0, 2);
+		Vector3f planeNormal;
+		planeNormal.x = Rtrans.at<float>(0, 2);
+		planeNormal.y = Rtrans.at<float>(1, 2);
+		planeNormal.z = Rtrans.at<float>(2, 2);
 
-		cameraPos.push_back(cameraPosition);
+		cameraOrigins.push_back(cameraOrigin);
+		planeNormals.push_back(planeNormal);
 
-		cout<<"camera position in world: "<<cameraPosition<<endl;
-		cout<<"camera plane normal in world: "<<RvecTemp<<endl;
+//		Rodrigues(R[i].t(), RvecTemp);
+//		Rvec.push_back(RvecTemp);
+
+		//cameraPos.push_back(cameraPosition);
+
+//		cout << "camera position in world: " << cameraPosition << endl;
+//		cout << "camera plane normal in world: " << RvecTemp << endl;
+
+		cout << "camera position in world: " << cameraOrigin.x<<", "<<cameraOrigin.y<<", "<<cameraOrigin.z << endl;
+		cout << "camera plane normal in world: " << planeNormal.x<<", "<<planeNormal.y<<", "<<planeNormal.z << endl;
 
 	}
-
-
 
 	return 0;
 }
