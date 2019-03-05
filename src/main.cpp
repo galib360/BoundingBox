@@ -458,7 +458,42 @@ int main() {
 	cout << intersection012.x << ", " << intersection012.y << ", "
 			<< intersection012.z << endl;
 
+	float xmin = 10;
+	float xmax = -10;
+	float ymin = 10;
+	float ymax = -10;
+	float zmin = 10;
+	float zmax = -10;
 
+	for (int i = 0; i <1; i++) {
+		for (int j = 1; j < 7; j++) {
+			for (int k = 7; k < N; k++) {
+				Vector3f intersectiontemp = get3PlaneIntersection(
+						cameraPlanes[i], cameraPlanes[j], cameraPlanes[k]);
+				if (intersectiontemp.x < xmin)
+					xmin = intersectiontemp.x;
+				if (intersectiontemp.x > xmax)
+					xmax = intersectiontemp.x;
+				if (intersectiontemp.y < ymin)
+					ymin = intersectiontemp.y;
+				if (intersectiontemp.y > ymax)
+					ymax = intersectiontemp.y;
+				if (intersectiontemp.z < zmin)
+					zmin = intersectiontemp.z;
+				if (intersectiontemp.z > zmax)
+					zmax = intersectiontemp.z;
+				cout << "for planes " << i << ", " << j << ", " << k
+						<< " intersection is: [ " << intersectiontemp.x << ", "
+						<< intersectiontemp.y << ", " << intersectiontemp.z
+						<< " ]" << endl;
+				j++;
+
+			}
+		}
+	}
+
+	cout<<"min is: [ "<<xmin<<", "<<ymin<<", "<<zmin<<" ]"<<endl;
+	cout<<"max is: [ "<<xmax<<", "<<ymax<<", "<<zmax<<" ]"<<endl;
 
 	return 0;
 }
