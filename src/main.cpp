@@ -155,6 +155,7 @@ vector<Mat> cameraPos;
 vector<Vector3f> cameraOrigins;
 vector<Vector3f> planeNormals;
 vector<Plane> cameraPlanes;
+vector<Point> midpoints;
 
 int main() {
 
@@ -278,6 +279,7 @@ int main() {
 		Point bottom_left(x, y + height);
 		Point bottom_right(x + width, y + height);
 		Point mid(x + width / 2, y + height / 2);
+		midpoints.push_back(mid);
 
 		cout << top_left << ", " << top_right << ", " << ", " << bottom_left
 				<< ", " << bottom_right << endl;
@@ -460,14 +462,13 @@ int main() {
 		Mat rotm, tvec, kk;
 		decomposeProjectionMatrix(M[i], kk, rotm, tvec);
 		K.push_back(kk);
-		cout<<kk<<endl<<endl;
+		cout << kk << endl << endl;
 		R.push_back(rotm);
 		Mat ttemp(3, 1, cv::DataType<float>::type, Scalar(1));
 		float temp4 = tvec.at<float>(3, 0);
 		float temp1 = ttemp.at<float>(0, 0) = tvec.at<float>(0, 0) / temp4;
 		float temp2 = ttemp.at<float>(1, 0) = tvec.at<float>(1, 0) / temp4;
 		float temp3 = ttemp.at<float>(2, 0) = tvec.at<float>(2, 0) / temp4;
-
 
 		t.push_back(ttemp);
 
@@ -581,6 +582,30 @@ int main() {
 			<< endl;
 	cout << "max is: [ " << xmax << ", " << ymax << ", " << zmax << " ]"
 			<< endl;
+
+//	Vec4f tria;
+//	_OutputArray triangulated(const Vec4f &tria);
+//	_InputArray a(const Mat &M[1]);
+//	_InputArray b(const Mat &M[2]);
+//	_InputArray c(const Point &midpoints[1]);
+//	_InputArray d(const Point &midpoints[2]);
+	//triangulatePoints(a, b, c, d, triangulated);
+	std::vector<cv::Point2d> cam0pnts;
+	std::vector<cv::Point2d> cam1pnts;
+	cam0pnts.push_back(midpoints[1]);
+	cam1pnts.push_back(midpoints[2]);
+	cv::Mat pnts3D(4, cam0pnts.size(), CV_32F);
+	triangulatePoints(M[1], M[2], cam0pnts, cam1pnts, pnts3D);
+	pnts3D.at<double>(0, 0) = pnts3D.at<double>(0, 0) / pnts3D.at<double>(3, 0);
+	pnts3D.at<double>(1, 0) = pnts3D.at<double>(1, 0) / pnts3D.at<double>(3, 0);
+	pnts3D.at<double>(2, 0) = pnts3D.at<double>(2, 0) / pnts3D.at<double>(3, 0);
+	pnts3D.at<double>(3, 0) = pnts3D.at<double>(3, 0) / pnts3D.at<double>(3, 0);
+
+
+
+	cout << pnts3D << endl;
+	cout << pnts3D.size() << endl;
+	cout << pnts3D.at<double>(1, 0) << endl;
 
 	return 0;
 }
