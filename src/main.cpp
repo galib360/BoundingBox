@@ -418,27 +418,106 @@ int main() {
 //	}
 
 	//for bird
+
+	FILE *fptrx;
+	FILE *fptry;
+	FILE *fptrz;
+	FILE *fptru;
+	FILE *fptrv;
+	FILE *fptrw;
+
+	if ((fptrx = fopen("x.txt", "w")) == NULL) {
+		fprintf(stderr, "Failed to open .txt file!\n");
+		exit(-1);
+	}
+
+	if ((fptry = fopen("y.txt", "w")) == NULL) {
+		fprintf(stderr, "Failed to open .txt file!\n");
+		exit(-1);
+	}
+
+	if ((fptrz = fopen("z.txt", "w")) == NULL) {
+		fprintf(stderr, "Failed to open .txt file!\n");
+		exit(-1);
+	}
+
+	if ((fptru = fopen("u.txt", "w")) == NULL) {
+		fprintf(stderr, "Failed to open .txt file!\n");
+		exit(-1);
+	}
+
+	if ((fptrv = fopen("v.txt", "w")) == NULL) {
+		fprintf(stderr, "Failed to open .txt file!\n");
+		exit(-1);
+	}
+
+	if ((fptrw = fopen("w.txt", "w")) == NULL) {
+		fprintf(stderr, "Failed to open .txt file!\n");
+		exit(-1);
+	}
+
 	for (int i = 0; i < N; i++) {
 		Mat rotm, tvec, kk;
 		decomposeProjectionMatrix(M[i], kk, rotm, tvec);
 		K.push_back(kk);
+		cout<<kk<<endl<<endl;
 		R.push_back(rotm);
 		Mat ttemp(3, 1, cv::DataType<float>::type, Scalar(1));
-		ttemp.at<float>(0, 0) = tvec.at<float>(0, 0);
-		ttemp.at<float>(1, 0) = tvec.at<float>(1, 0);
-		ttemp.at<float>(2, 0) = tvec.at<float>(2, 0);
+		float temp4 = tvec.at<float>(3, 0);
+		float temp1 = ttemp.at<float>(0, 0) = tvec.at<float>(0, 0) / temp4;
+		float temp2 = ttemp.at<float>(1, 0) = tvec.at<float>(1, 0) / temp4;
+		float temp3 = ttemp.at<float>(2, 0) = tvec.at<float>(2, 0) / temp4;
+
+
 		t.push_back(ttemp);
 
-		Mat cameraPosition = -R[i].t() * t[i];
+		//Mat cameraPosition = -R[i].t() * t[i];
 		Mat Rtrans = R[i].t();
+		Mat cameraPosition = ttemp;
+		//Mat Rtrans = rotm;
 		Vector3f cameraOrigin;
 		cameraOrigin.x = cameraPosition.at<float>(0, 0);
+		if ((fptrx = fopen("x.txt", "a")) == NULL) {
+			fprintf(stderr, "Failed to open .txt file!\n");
+			exit(-1);
+		}
+		fprintf(fptrx, "%f ", cameraOrigin.x);
+
 		cameraOrigin.y = cameraPosition.at<float>(0, 1);
+		if ((fptry = fopen("y.txt", "a")) == NULL) {
+			fprintf(stderr, "Failed to open .txt file!\n");
+			exit(-1);
+		}
+		fprintf(fptry, "%f ", cameraOrigin.y);
+
 		cameraOrigin.z = cameraPosition.at<float>(0, 2);
+		if ((fptrz = fopen("z.txt", "a")) == NULL) {
+			fprintf(stderr, "Failed to open .txt file!\n");
+			exit(-1);
+		}
+		fprintf(fptrz, "%f ", cameraOrigin.z);
+
 		Vector3f planeNormal;
 		planeNormal.x = Rtrans.at<float>(0, 2);
+		if ((fptru = fopen("u.txt", "a")) == NULL) {
+			fprintf(stderr, "Failed to open .txt file!\n");
+			exit(-1);
+		}
+		fprintf(fptru, "%f ", planeNormal.x);
+
 		planeNormal.y = Rtrans.at<float>(1, 2);
+		if ((fptrv = fopen("v.txt", "a")) == NULL) {
+			fprintf(stderr, "Failed to open .txt file!\n");
+			exit(-1);
+		}
+		fprintf(fptrv, "%f ", planeNormal.y);
+
 		planeNormal.z = Rtrans.at<float>(2, 2);
+		if ((fptrw = fopen("w.txt", "a")) == NULL) {
+			fprintf(stderr, "Failed to open .txt file!\n");
+			exit(-1);
+		}
+		fprintf(fptrw, "%f ", planeNormal.z);
 
 		Plane cameraPlane = ConstructFromPointNormal(cameraOrigin, planeNormal);
 
@@ -452,6 +531,12 @@ int main() {
 				<< planeNormal.y << ", " << planeNormal.z << endl;
 
 	}
+	fclose(fptrx);
+	fclose(fptry);
+	fclose(fptrz);
+	fclose(fptru);
+	fclose(fptrv);
+	fclose(fptrw);
 
 	Vector3f intersection012 = get3PlaneIntersection(cameraPlanes[0],
 			cameraPlanes[1], cameraPlanes[2]);
@@ -465,7 +550,7 @@ int main() {
 	float zmin = 10;
 	float zmax = -10;
 
-	for (int i = 0; i <1; i++) {
+	for (int i = 0; i < 1; i++) {
 		for (int j = 1; j < 7; j++) {
 			for (int k = 7; k < N; k++) {
 				Vector3f intersectiontemp = get3PlaneIntersection(
@@ -492,8 +577,10 @@ int main() {
 		}
 	}
 
-	cout<<"min is: [ "<<xmin<<", "<<ymin<<", "<<zmin<<" ]"<<endl;
-	cout<<"max is: [ "<<xmax<<", "<<ymax<<", "<<zmax<<" ]"<<endl;
+	cout << "min is: [ " << xmin << ", " << ymin << ", " << zmin << " ]"
+			<< endl;
+	cout << "max is: [ " << xmax << ", " << ymax << ", " << zmax << " ]"
+			<< endl;
 
 	return 0;
 }
