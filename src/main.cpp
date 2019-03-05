@@ -157,10 +157,18 @@ vector<Vector3f> planeNormals;
 vector<Plane> cameraPlanes;
 vector<Point> midpoints;
 
+////for 2d to 3d conversion
+typedef struct {
+	vector<Point2f> pnts2d;
+} campnts;
+
+vector<campnts> pnts;
+vector<Mat> points3D;
+
 int main() {
 
 	//cv::String path("dinoSR/*.png");
-	cv::String path("birdR/*.pgm");
+	cv::String path("birdR2/*.pgm");
 	vector<cv::String> fn;
 	vector<cv::Mat> imageData;
 
@@ -274,12 +282,20 @@ int main() {
 		int width = test.width;
 		int height = test.height;
 		// Now with those parameters you can calculate the 4 points
-		Point top_left(x, y);
-		Point top_right(x + width, y);
-		Point bottom_left(x, y + height);
-		Point bottom_right(x + width, y + height);
-		Point mid(x + width / 2, y + height / 2);
+		Point2f top_left(x, y);
+		Point2f top_right(x + width, y);
+		Point2f bottom_left(x, y + height);
+		Point2f bottom_right(x + width, y + height);
+		Point2f mid(x + width / 2, y + height / 2);
 		midpoints.push_back(mid);
+
+		campnts camerapnts;
+		camerapnts.pnts2d.push_back(top_left);
+		camerapnts.pnts2d.push_back(top_right);
+		camerapnts.pnts2d.push_back(bottom_left);
+		camerapnts.pnts2d.push_back(bottom_right);
+		//camerapnts.pnts2d.push_back(mid);
+		pnts.push_back(camerapnts);
 
 		cout << top_left << ", " << top_right << ", " << ", " << bottom_left
 				<< ", " << bottom_right << endl;
@@ -303,7 +319,7 @@ int main() {
 	vector<string> fid;
 
 	//std::ifstream txtfile("dinoSR/dinoSR_par.txt");
-	std::ifstream txtfile("birdR/birdR_par.txt");
+	std::ifstream txtfile("birdR2/birdR_par.txt");
 	cout << "Reading text file" << endl;
 	//std::ifstream txtfile("templeSR/templeSR_par.txt");
 	std::string line;
@@ -462,7 +478,7 @@ int main() {
 		Mat rotm, tvec, kk;
 		decomposeProjectionMatrix(M[i], kk, rotm, tvec);
 		K.push_back(kk);
-		cout << kk << endl << endl;
+//		cout << kk << endl << endl;
 		R.push_back(rotm);
 		Mat ttemp(3, 1, cv::DataType<float>::type, Scalar(1));
 		float temp4 = tvec.at<float>(3, 0);
@@ -526,10 +542,10 @@ int main() {
 		planeNormals.push_back(planeNormal);
 		cameraPlanes.push_back(cameraPlane);
 
-		cout << "camera position in world: " << cameraOrigin.x << ", "
-				<< cameraOrigin.y << ", " << cameraOrigin.z << endl;
-		cout << "camera plane normal in world: " << planeNormal.x << ", "
-				<< planeNormal.y << ", " << planeNormal.z << endl;
+//		cout << "camera position in world: " << cameraOrigin.x << ", "
+//				<< cameraOrigin.y << ", " << cameraOrigin.z << endl;
+//		cout << "camera plane normal in world: " << planeNormal.x << ", "
+//				<< planeNormal.y << ", " << planeNormal.z << endl;
 
 	}
 	fclose(fptrx);
@@ -539,73 +555,106 @@ int main() {
 	fclose(fptrv);
 	fclose(fptrw);
 
-	Vector3f intersection012 = get3PlaneIntersection(cameraPlanes[0],
-			cameraPlanes[1], cameraPlanes[2]);
-	cout << intersection012.x << ", " << intersection012.y << ", "
-			<< intersection012.z << endl;
+//	Vector3f intersection012 = get3PlaneIntersection(cameraPlanes[0],
+//			cameraPlanes[1], cameraPlanes[2]);
+//	cout << intersection012.x << ", " << intersection012.y << ", "
+//			<< intersection012.z << endl;
 
-	float xmin = 10;
-	float xmax = -10;
-	float ymin = 10;
-	float ymax = -10;
-	float zmin = 10;
-	float zmax = -10;
+	float xmin = 100;
+	float xmax = -100;
+	float ymin = 100;
+	float ymax = -100;
+	float zmin = 100;
+	float zmax = -100;
 
-	for (int i = 0; i < 1; i++) {
-		for (int j = 1; j < 7; j++) {
-			for (int k = 7; k < N; k++) {
-				Vector3f intersectiontemp = get3PlaneIntersection(
-						cameraPlanes[i], cameraPlanes[j], cameraPlanes[k]);
-				if (intersectiontemp.x < xmin)
-					xmin = intersectiontemp.x;
-				if (intersectiontemp.x > xmax)
-					xmax = intersectiontemp.x;
-				if (intersectiontemp.y < ymin)
-					ymin = intersectiontemp.y;
-				if (intersectiontemp.y > ymax)
-					ymax = intersectiontemp.y;
-				if (intersectiontemp.z < zmin)
-					zmin = intersectiontemp.z;
-				if (intersectiontemp.z > zmax)
-					zmax = intersectiontemp.z;
-				cout << "for planes " << i << ", " << j << ", " << k
-						<< " intersection is: [ " << intersectiontemp.x << ", "
-						<< intersectiontemp.y << ", " << intersectiontemp.z
-						<< " ]" << endl;
-				j++;
+//	for (int i = 0; i < 1; i++) {
+//		for (int j = 1; j < 7; j++) {
+//			for (int k = 7; k < N; k++) {
+//				Vector3f intersectiontemp = get3PlaneIntersection(
+//						cameraPlanes[i], cameraPlanes[j], cameraPlanes[k]);
+//				if (intersectiontemp.x < xmin)
+//					xmin = intersectiontemp.x;
+//				if (intersectiontemp.x > xmax)
+//					xmax = intersectiontemp.x;
+//				if (intersectiontemp.y < ymin)
+//					ymin = intersectiontemp.y;
+//				if (intersectiontemp.y > ymax)
+//					ymax = intersectiontemp.y;
+//				if (intersectiontemp.z < zmin)
+//					zmin = intersectiontemp.z;
+//				if (intersectiontemp.z > zmax)
+//					zmax = intersectiontemp.z;
+////				cout << "for planes " << i << ", " << j << ", " << k
+////						<< " intersection is: [ " << intersectiontemp.x << ", "
+////						<< intersectiontemp.y << ", " << intersectiontemp.z
+////						<< " ]" << endl;
+//				j++;
+//
+//			}
+//		}
+//	}
 
+//	cout << "min is: [ " << xmin << ", " << ymin << ", " << zmin << " ]"
+//			<< endl;
+//	cout << "max is: [ " << xmax << ", " << ymax << ", " << zmax << " ]"
+//			<< endl;
+
+//	std::vector<cv::Point2d> cam0pnts;
+//
+//	std::vector<cv::Point2d> cam1pnts;
+//
+//	cam0pnts.push_back(midpoints[1]);
+//	cam1pnts.push_back(midpoints[2]);
+//
+//	cv::Mat pnts3D(4, cam0pnts.size(), CV_32F);
+//
+//	triangulatePoints(M[1], M[2], cam0pnts, cam1pnts, pnts3D);
+//
+//	pnts3D.at<double>(0, 0) = pnts3D.at<double>(0, 0) / pnts3D.at<double>(3, 0);
+//	pnts3D.at<double>(1, 0) = pnts3D.at<double>(1, 0) / pnts3D.at<double>(3, 0);
+//	pnts3D.at<double>(2, 0) = pnts3D.at<double>(2, 0) / pnts3D.at<double>(3, 0);
+//	pnts3D.at<double>(3, 0) = pnts3D.at<double>(3, 0) / pnts3D.at<double>(3, 0);
+
+	for (int a = 0; a < 3; a++) {
+		Mat temp(4, pnts[0].pnts2d.size(), CV_32F);
+		triangulatePoints(M[0], M[a+1], pnts[0].pnts2d, pnts[a+1].pnts2d, temp);
+		//temp = temp.t();
+		for (int k = 0; k < temp.cols; k++) {
+			for (int j = 0; j < 4; j++) {
+				temp.at<float>(j, k) = temp.at<float>(j, k)
+						/ temp.at<float>(3, k);
+				if (j == 0) {
+					if (temp.at<float>(j, k) < xmin)
+						xmin = temp.at<float>(j, k);
+					if (temp.at<float>(j, k) > xmax)
+						xmax = temp.at<float>(j, k);
+				} else if (j == 1) {
+					if (temp.at<float>(j, k) < ymin)
+						ymin = temp.at<float>(j, k);
+					if (temp.at<float>(j, k) > ymax)
+						ymax = temp.at<float>(j, k);
+				} else if (j == 2) {
+					if (temp.at<float>(j, k) < zmin)
+						zmin = temp.at<float>(j, k);
+					if (temp.at<float>(j, k) > zmax)
+						zmax = temp.at<float>(j, k);
+				}
 			}
 		}
+		points3D.push_back(temp);
+		cout << temp << endl;
 	}
 
 	cout << "min is: [ " << xmin << ", " << ymin << ", " << zmin << " ]"
 			<< endl;
 	cout << "max is: [ " << xmax << ", " << ymax << ", " << zmax << " ]"
 			<< endl;
+	cout<<points3D[0].col(0)<<endl;
 
-//	Vec4f tria;
-//	_OutputArray triangulated(const Vec4f &tria);
-//	_InputArray a(const Mat &M[1]);
-//	_InputArray b(const Mat &M[2]);
-//	_InputArray c(const Point &midpoints[1]);
-//	_InputArray d(const Point &midpoints[2]);
-	//triangulatePoints(a, b, c, d, triangulated);
-	std::vector<cv::Point2d> cam0pnts;
-	std::vector<cv::Point2d> cam1pnts;
-	cam0pnts.push_back(midpoints[1]);
-	cam1pnts.push_back(midpoints[2]);
-	cv::Mat pnts3D(4, cam0pnts.size(), CV_32F);
-	triangulatePoints(M[1], M[2], cam0pnts, cam1pnts, pnts3D);
-	pnts3D.at<double>(0, 0) = pnts3D.at<double>(0, 0) / pnts3D.at<double>(3, 0);
-	pnts3D.at<double>(1, 0) = pnts3D.at<double>(1, 0) / pnts3D.at<double>(3, 0);
-	pnts3D.at<double>(2, 0) = pnts3D.at<double>(2, 0) / pnts3D.at<double>(3, 0);
-	pnts3D.at<double>(3, 0) = pnts3D.at<double>(3, 0) / pnts3D.at<double>(3, 0);
-
-
-
-	cout << pnts3D << endl;
-	cout << pnts3D.size() << endl;
-	cout << pnts3D.at<double>(1, 0) << endl;
+//	cout << pnts3D << endl;
+//	cout << pnts3D.size() << endl;
+//	cout << pnts3D.at<double>(1, 0) << endl;
+	//cout<< pnts[1].pnts2d<<endl;
 
 	return 0;
 }
