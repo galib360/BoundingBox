@@ -10,6 +10,7 @@
 
 #include <math.h>
 #include <cstdlib>
+#define PI 3.14159265
 
 using namespace cv;
 using namespace std;
@@ -141,6 +142,7 @@ Vector3f get3PlaneIntersection(const Plane& plane1, const Plane& plane2,
 
 int N;
 int total_number;
+int decPoint;
 vector<cv::Mat> M; //params
 vector<cv::Mat> silhouettes;
 //Vec3f ve;
@@ -297,10 +299,10 @@ int main() {
 		//camerapnts.pnts2d.push_back(mid);
 		pnts.push_back(camerapnts);
 
-		cout << top_left << ", " << top_right << ", " << ", " << bottom_left
-				<< ", " << bottom_right << endl;
-
-		cout << mid << endl;
+//		cout << top_left << ", " << top_right << ", " << ", " << bottom_left
+//				<< ", " << bottom_right << endl;
+//
+//		cout << mid << endl;
 
 		/// Show in a window
 //		namedWindow("Contours", CV_WINDOW_AUTOSIZE);
@@ -615,42 +617,74 @@ int main() {
 //	pnts3D.at<double>(2, 0) = pnts3D.at<double>(2, 0) / pnts3D.at<double>(3, 0);
 //	pnts3D.at<double>(3, 0) = pnts3D.at<double>(3, 0) / pnts3D.at<double>(3, 0);
 
-	for (int a = 0; a < N-1; a++) {
-		Mat temp(4, pnts[0].pnts2d.size(), CV_32F);
-		//triangulatePoints(M[0], M[a+1], pnts[0].pnts2d, pnts[a+1].pnts2d, temp);
-		triangulatePoints(M[a], M[a+1], pnts[a].pnts2d, pnts[a+1].pnts2d, temp);
-		//temp = temp.t();
-		for (int k = 0; k < temp.cols; k++) {
-			for (int j = 0; j < 4; j++) {
-				temp.at<float>(j, k) = temp.at<float>(j, k)
-						/ temp.at<float>(3, k);
-				if (j == 0) {
-					if (temp.at<float>(j, k) < xmin)
-						xmin = temp.at<float>(j, k);
-					if (temp.at<float>(j, k) > xmax)
-						xmax = temp.at<float>(j, k);
-				} else if (j == 1) {
-					if (temp.at<float>(j, k) < ymin)
-						ymin = temp.at<float>(j, k);
-					if (temp.at<float>(j, k) > ymax)
-						ymax = temp.at<float>(j, k);
-				} else if (j == 2) {
-					if (temp.at<float>(j, k) < zmin)
-						zmin = temp.at<float>(j, k);
-					if (temp.at<float>(j, k) > zmax)
-						zmax = temp.at<float>(j, k);
+	for (int a = 0; a < N - 1; a++) {
+
+		///check the angle here before calculation
+		float dot = Dot(planeNormals[a], planeNormals[a + 1]);
+		float lensq1 = (planeNormals[a].x * planeNormals[a].x)
+				+ (planeNormals[a].y * planeNormals[a].y)
+				+ (planeNormals[a].z * planeNormals[a].z);
+		float lensq2 = (planeNormals[a + 1].x * planeNormals[a + 1].x)
+				+ (planeNormals[a + 1].y * planeNormals[a + 1].y)
+				+ (planeNormals[a + 1].z * planeNormals[a + 1].z);
+		float angle = acos(dot / sqrt(lensq1 * lensq2));
+		float angleD = angle * 180.0 / PI;
+
+		cout << "Angle in radian : " << angle << ", in Degree : " << angleD
+				<< endl;
+
+		if (angleD < 30) {
+			Mat temp(4, pnts[0].pnts2d.size(), CV_32F);
+			//triangulatePoints(M[0], M[a+1], pnts[0].pnts2d, pnts[a+1].pnts2d, temp);
+			triangulatePoints(M[a], M[a + 1], pnts[a].pnts2d,
+					pnts[a + 1].pnts2d, temp);
+			//temp = temp.t();
+			for (int k = 0; k < temp.cols; k++) {
+				for (int k = 0; k < temp.cols; k++) {
+					for (int j = 0; j < 4; j++) {
+						temp.at<float>(j, k) = temp.at<float>(j, k)
+								/ temp.at<float>(3, k);
+						if (j == 0) {
+							if (temp.at<float>(j, k) < xmin) {
+								xmin = temp.at<float>(j, k);
+								xmin = ceilf(xmin * 100) / 100;
+							}
+							if (temp.at<float>(j, k) > xmax) {
+								xmax = temp.at<float>(j, k);
+								xmax = ceilf(xmax * 100) / 100;
+							}
+						} else if (j == 1) {
+							if (temp.at<float>(j, k) < ymin) {
+								ymin = temp.at<float>(j, k);
+								ymin = ceilf(ymin * 100) / 100;
+							}
+							if (temp.at<float>(j, k) > ymax) {
+								ymax = temp.at<float>(j, k);
+								ymax = ceilf(ymax * 100) / 100;
+							}
+						} else if (j == 2) {
+							if (temp.at<float>(j, k) < zmin) {
+								zmin = temp.at<float>(j, k);
+								zmin = ceilf(zmin * 100) / 100;
+							}
+							if (temp.at<float>(j, k) > zmax) {
+								zmax = temp.at<float>(j, k);
+								zmax = ceilf(zmax * 100) / 100;
+							}
+						}
+					}
 				}
 			}
+			points3D.push_back(temp);
+			//cout << temp << endl;
 		}
-		points3D.push_back(temp);
-		cout << temp << endl;
 	}
 
 	cout << "min is: [ " << xmin << ", " << ymin << ", " << zmin << " ]"
 			<< endl;
 	cout << "max is: [ " << xmax << ", " << ymax << ", " << zmax << " ]"
 			<< endl;
-	cout<<points3D[0].col(0)<<endl;
+	//cout << points3D[0].col(0) << endl;
 
 //	cout << pnts3D << endl;
 //	cout << pnts3D.size() << endl;
