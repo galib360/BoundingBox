@@ -615,9 +615,10 @@ int main() {
 //	pnts3D.at<double>(2, 0) = pnts3D.at<double>(2, 0) / pnts3D.at<double>(3, 0);
 //	pnts3D.at<double>(3, 0) = pnts3D.at<double>(3, 0) / pnts3D.at<double>(3, 0);
 
-	for (int a = 0; a < 3; a++) {
+	for (int a = 0; a < N-1; a++) {
 		Mat temp(4, pnts[0].pnts2d.size(), CV_32F);
-		triangulatePoints(M[0], M[a+1], pnts[0].pnts2d, pnts[a+1].pnts2d, temp);
+		//triangulatePoints(M[0], M[a+1], pnts[0].pnts2d, pnts[a+1].pnts2d, temp);
+		triangulatePoints(M[a], M[a+1], pnts[a].pnts2d, pnts[a+1].pnts2d, temp);
 		//temp = temp.t();
 		for (int k = 0; k < temp.cols; k++) {
 			for (int j = 0; j < 4; j++) {
