@@ -276,9 +276,9 @@ int main() {
 				vector<Vec4i>(), 0, Point());
 
 		/// Show in a window
-		namedWindow("Hull demo", CV_WINDOW_AUTOSIZE);
-		imshow("Hull demo", drawing2);
-		waitKey(0);
+//		namedWindow("Hull demo", CV_WINDOW_AUTOSIZE);
+//		imshow("Hull demo", drawing2);
+//		waitKey(0);
 
 		/// Draw polygonal contour + bonding rects + circles
 
