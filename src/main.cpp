@@ -167,8 +167,8 @@ vector<Mat> points3D;
 
 int main() {
 
-	//cv::String path("dinoSR/*.png");
-	cv::String path("birdR2/*.pgm");
+	cv::String path("dinoSR/*.png");
+	//cv::String path("birdR2/*.pgm");
 	vector<cv::String> fn;
 	vector<cv::Mat> imageData;
 
@@ -181,7 +181,7 @@ int main() {
 		if (im.empty())
 			continue; //only proceed if sucsessful
 
-		im = ~im; //for bird data
+		//im = ~im; //for bird data
 
 		imageData.push_back(im);
 //		cv::namedWindow("images", cv::WINDOW_AUTOSIZE);
@@ -318,8 +318,8 @@ int main() {
 
 	vector<string> fid;
 
-	//std::ifstream txtfile("dinoSR/dinoSR_par.txt");
-	std::ifstream txtfile("birdR2/birdR_par.txt");
+	std::ifstream txtfile("dinoSR/dinoSR_par.txt");
+	//std::ifstream txtfile("birdR2/birdR_par.txt");
 	cout << "Reading text file" << endl;
 	//std::ifstream txtfile("templeSR/templeSR_par.txt");
 	std::string line;
@@ -345,95 +345,95 @@ int main() {
 		i++;
 
 		//bird Data M's (projection Matrix)
-		Mat P(3, 4, cv::DataType<float>::type, Scalar(1));
+//		Mat P(3, 4, cv::DataType<float>::type, Scalar(1));
+//		for (int j = 0; j < 3; j++) {
+//			for (int k = 0; k < 4; k++) {
+//				float temp = strtof((linedata[i]).c_str(), 0);
+//
+//				P.at<float>(j, k) = temp;
+//				i++;
+//			}
+//		}
+//		M.push_back(P);
+
+		//Put data into K
+		Mat kk(3, 3, cv::DataType<float>::type, Scalar(1));
 		for (int j = 0; j < 3; j++) {
-			for (int k = 0; k < 4; k++) {
+			for (int k = 0; k < 3; k++) {
 				float temp = strtof((linedata[i]).c_str(), 0);
 
-				P.at<float>(j, k) = temp;
+				kk.at<float>(j, k) = temp;
 				i++;
 			}
 		}
-		M.push_back(P);
+		K.push_back(kk);
 
-//		//Put data into K
-//		Mat kk(3, 3, cv::DataType<float>::type, Scalar(1));
-//		for (int j = 0; j < 3; j++) {
-//			for (int k = 0; k < 3; k++) {
-//				float temp = strtof((linedata[i]).c_str(), 0);
-//
-//				kk.at<float>(j, k) = temp;
-//				i++;
-//			}
-//		}
-//		K.push_back(kk);
-//
-//		Mat rot(3, 3, cv::DataType<float>::type, Scalar(1));
-//		Mat Rttemp(3, 4, cv::DataType<float>::type, Scalar(1));
-//		for (int j = 0; j < 3; j++) {
-//			for (int k = 0; k < 3; k++) {
-//				float temp = strtof((linedata[i]).c_str(), 0);
-//
-//				Rttemp.at<float>(j, k) = temp;
-//				rot.at<float>(j, k) = temp;
-//				i++;
-//			}
-//		}
-//
-//		R.push_back(rot);
-//
-//		int k = 3;
-//		Mat ttemp(3, 1, cv::DataType<float>::type, Scalar(1));
-//		for (int j = 0; j < 3; j++) {
-//			float temp = strtof((linedata[i]).c_str(), 0);
-//			Rttemp.at<float>(j, k) = temp;
-//
-//			ttemp.at<float>(j, 0) = temp;
-//			i++;
-//		}
-//		Rt.push_back(Rttemp);
-//		t.push_back(ttemp);
+		Mat rot(3, 3, cv::DataType<float>::type, Scalar(1));
+		Mat Rttemp(3, 4, cv::DataType<float>::type, Scalar(1));
+		for (int j = 0; j < 3; j++) {
+			for (int k = 0; k < 3; k++) {
+				float temp = strtof((linedata[i]).c_str(), 0);
+
+				Rttemp.at<float>(j, k) = temp;
+				rot.at<float>(j, k) = temp;
+				i++;
+			}
+		}
+
+		R.push_back(rot);
+
+		int k = 3;
+		Mat ttemp(3, 1, cv::DataType<float>::type, Scalar(1));
+		for (int j = 0; j < 3; j++) {
+			float temp = strtof((linedata[i]).c_str(), 0);
+			Rttemp.at<float>(j, k) = temp;
+
+			ttemp.at<float>(j, 0) = temp;
+			i++;
+		}
+		Rt.push_back(Rttemp);
+		t.push_back(ttemp);
 
 	}
 
 	// Compute M's
-//	for (int i = 0; i < N; i++) {
-//
-//		Mat Mtemp = K[i] * Rt[i];
-//		M.push_back(Mtemp);
-//		Mat cameraPosition = -R[i].t() * t[i];
-//		Mat Rtrans = R[i].t();
-//		Vector3f cameraOrigin;
-//		cameraOrigin.x = cameraPosition.at<float>(0, 0);
-//		cameraOrigin.y = cameraPosition.at<float>(0, 1);
-//		cameraOrigin.z = cameraPosition.at<float>(0, 2);
-//		Vector3f planeNormal;
-//		planeNormal.x = Rtrans.at<float>(0, 2);
-//		planeNormal.y = Rtrans.at<float>(1, 2);
-//		//planeNormal.y = 0.1;
-//		planeNormal.z = Rtrans.at<float>(2, 2);
-//
-//		Plane cameraPlane = ConstructFromPointNormal(cameraOrigin, planeNormal);
-//
-//		cameraOrigins.push_back(cameraOrigin);
-//		planeNormals.push_back(planeNormal);
-//		cameraPlanes.push_back(cameraPlane);
-//		float test = Dot(cameraOrigins[i], planeNormals[i]);
-//		//cout<<"test d is : "<<test<<endl;
-////		Rodrigues(R[i].t(), RvecTemp);
-////		Rvec.push_back(RvecTemp);
-//
-//		//cameraPos.push_back(cameraPosition);
-//
-////		cout << "camera position in world: " << cameraPosition << endl;
-////		cout << "camera plane normal in world: " << RvecTemp << endl;
-//
-//		cout << "camera position in world: " << cameraOrigin.x << ", "
-//				<< cameraOrigin.y << ", " << cameraOrigin.z << endl;
-//		cout << "camera plane normal in world: " << planeNormal.x << ", "
-//				<< planeNormal.y << ", " << planeNormal.z << endl;
-//
-//	}
+	for (int i = 0; i < N; i++) {
+
+		Mat Mtemp = K[i] * Rt[i];
+		M.push_back(Mtemp);
+		Mat cameraPosition = -R[i].t() * t[i];
+		Mat Rtrans = R[i].t();
+		Vector3f cameraOrigin;
+		cameraOrigin.x = cameraPosition.at<float>(0, 0);
+		cameraOrigin.y = cameraPosition.at<float>(0, 1);
+		cameraOrigin.z = cameraPosition.at<float>(0, 2);
+		Vector3f planeNormal;
+		planeNormal.x = Rtrans.at<float>(0, 2);
+		planeNormal.y = Rtrans.at<float>(1, 2);
+		//planeNormal.y = 0.1;
+		planeNormal.z = Rtrans.at<float>(2, 2);
+
+		Plane cameraPlane = ConstructFromPointNormal(cameraOrigin, planeNormal);
+
+		cameraOrigins.push_back(cameraOrigin);
+		planeNormals.push_back(planeNormal);
+		cameraPlanes.push_back(cameraPlane);
+		float test = Dot(cameraOrigins[i], planeNormals[i]);
+		//cout<<"test d is : "<<test<<endl;
+//		Rodrigues(R[i].t(), RvecTemp);
+//		Rvec.push_back(RvecTemp);
+
+		//cameraPos.push_back(cameraPosition);
+
+//		cout << "camera position in world: " << cameraPosition << endl;
+//		cout << "camera plane normal in world: " << RvecTemp << endl;
+
+		cout << "camera position in world: " << cameraOrigin.x << ", "
+				<< cameraOrigin.y << ", " << cameraOrigin.z << endl;
+		cout << "camera plane normal in world: " << planeNormal.x << ", "
+				<< planeNormal.y << ", " << planeNormal.z << endl;
+
+	}
 
 	//for bird
 
@@ -615,10 +615,10 @@ int main() {
 //	pnts3D.at<double>(2, 0) = pnts3D.at<double>(2, 0) / pnts3D.at<double>(3, 0);
 //	pnts3D.at<double>(3, 0) = pnts3D.at<double>(3, 0) / pnts3D.at<double>(3, 0);
 
-	for (int a = 0; a < N-1; a++) {
+	for (int a = 0; a < 3; a++) {
 		Mat temp(4, pnts[0].pnts2d.size(), CV_32F);
-		//triangulatePoints(M[0], M[a+1], pnts[0].pnts2d, pnts[a+1].pnts2d, temp);
-		triangulatePoints(M[a], M[a+1], pnts[a].pnts2d, pnts[a+1].pnts2d, temp);
+		triangulatePoints(M[0], M[a+1], pnts[0].pnts2d, pnts[a+1].pnts2d, temp);
+		//triangulatePoints(M[a], M[a+1], pnts[a].pnts2d, pnts[a+1].pnts2d, temp);
 		//temp = temp.t();
 		for (int k = 0; k < temp.cols; k++) {
 			for (int j = 0; j < 4; j++) {
