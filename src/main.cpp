@@ -649,23 +649,36 @@ int main() {
 				temp.at<float>(j, k) = temp.at<float>(j, k)
 						/ temp.at<float>(3, k);
 				if (j == 0) {
-					if (temp.at<float>(j, k) < xmin)
+					if (temp.at<float>(j, k) < xmin){
 						xmin = temp.at<float>(j, k);
-					if (temp.at<float>(j, k) > xmax)
+						xmin = ceilf(xmin * 100)/ 100;
+					}
+					if (temp.at<float>(j, k) > xmax){
 						xmax = temp.at<float>(j, k);
+						xmax = ceilf(xmax * 100)/ 100;
+					}
 				} else if (j == 1) {
-					if (temp.at<float>(j, k) < ymin)
+					if (temp.at<float>(j, k) < ymin){
 						ymin = temp.at<float>(j, k);
-					if (temp.at<float>(j, k) > ymax)
+						ymin = ceilf(ymin * 100)/ 100;
+					}
+					if (temp.at<float>(j, k) > ymax){
 						ymax = temp.at<float>(j, k);
+						ymax = ceilf(ymax * 100)/ 100;
+					}
 				} else if (j == 2) {
-					if (temp.at<float>(j, k) < zmin)
+					if (temp.at<float>(j, k) < zmin){
 						zmin = temp.at<float>(j, k);
-					if (temp.at<float>(j, k) > zmax)
+						zmin = ceilf(zmin * 100)/ 100;
+					}
+					if (temp.at<float>(j, k) > zmax){
 						zmax = temp.at<float>(j, k);
+						zmax = ceilf(zmax * 100)/ 100;
+					}
 				}
 			}
 		}
+		//ceilf(val * 100) / 100;
 		points3D.push_back(temp);
 		cout << temp << endl;
 	}
