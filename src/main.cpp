@@ -142,7 +142,7 @@ Vector3f get3PlaneIntersection(const Plane& plane1, const Plane& plane2,
 
 int N;
 int total_number;
-int decPoint;
+int decPoint = 1/0.01;
 vector<cv::Mat> M; //params
 vector<cv::Mat> silhouettes;
 //Vec3f ve;
@@ -170,7 +170,8 @@ vector<Mat> points3D;
 int main() {
 
 	//cv::String path("dinoSR/*.png");
-	cv::String path("birdR2/*.pgm");
+	//cv::String path("birdR2/*.pgm");
+	cv::String path("dancer/*.pbm");
 	vector<cv::String> fn;
 	vector<cv::Mat> imageData;
 
@@ -183,7 +184,7 @@ int main() {
 		if (im.empty())
 			continue; //only proceed if sucsessful
 
-		im = ~im; //for bird data
+		//im = ~im; //for bird data
 
 		imageData.push_back(im);
 //		cv::namedWindow("images", cv::WINDOW_AUTOSIZE);
@@ -305,9 +306,9 @@ int main() {
 //		cout << mid << endl;
 
 		/// Show in a window
-//		namedWindow("Contours", CV_WINDOW_AUTOSIZE);
-//		imshow("Contours", drawing);
-//		waitKey(0);
+		namedWindow("Contours", CV_WINDOW_AUTOSIZE);
+		imshow("Contours", drawing);
+		waitKey(0);
 
 		silhouettes.push_back(binaryMat);
 
@@ -321,7 +322,8 @@ int main() {
 	vector<string> fid;
 
 	//std::ifstream txtfile("dinoSR/dinoSR_par.txt");
-	std::ifstream txtfile("birdR2/birdR_par.txt");
+	//std::ifstream txtfile("birdR2/birdR_par.txt");
+	std::ifstream txtfile("dancer/dancer_par.txt");
 	cout << "Reading text file" << endl;
 	//std::ifstream txtfile("templeSR/templeSR_par.txt");
 	std::string line;
@@ -633,7 +635,7 @@ int main() {
 		cout << "Angle in radian : " << angle << ", in Degree : " << angleD
 				<< endl;
 
-		if (angleD < 30) {
+		if (angleD < 45) {
 			Mat temp(4, pnts[0].pnts2d.size(), CV_32F);
 			//triangulatePoints(M[0], M[a+1], pnts[0].pnts2d, pnts[a+1].pnts2d, temp);
 			triangulatePoints(M[a], M[a + 1], pnts[a].pnts2d,
@@ -647,29 +649,29 @@ int main() {
 						if (j == 0) {
 							if (temp.at<float>(j, k) < xmin) {
 								xmin = temp.at<float>(j, k);
-								xmin = ceilf(xmin * 100) / 100;
+								xmin = ceilf(xmin * decPoint) / decPoint;
 							}
 							if (temp.at<float>(j, k) > xmax) {
 								xmax = temp.at<float>(j, k);
-								xmax = ceilf(xmax * 100) / 100;
+								xmax = ceilf(xmax * decPoint) / decPoint;
 							}
 						} else if (j == 1) {
 							if (temp.at<float>(j, k) < ymin) {
 								ymin = temp.at<float>(j, k);
-								ymin = ceilf(ymin * 100) / 100;
+								ymin = ceilf(ymin * decPoint) / decPoint;
 							}
 							if (temp.at<float>(j, k) > ymax) {
 								ymax = temp.at<float>(j, k);
-								ymax = ceilf(ymax * 100) / 100;
+								ymax = ceilf(ymax * decPoint) / decPoint;
 							}
 						} else if (j == 2) {
 							if (temp.at<float>(j, k) < zmin) {
 								zmin = temp.at<float>(j, k);
-								zmin = ceilf(zmin * 100) / 100;
+								zmin = ceilf(zmin * decPoint) / decPoint;
 							}
 							if (temp.at<float>(j, k) > zmax) {
 								zmax = temp.at<float>(j, k);
-								zmax = ceilf(zmax * 100) / 100;
+								zmax = ceilf(zmax * decPoint) / decPoint;
 							}
 						}
 					}
