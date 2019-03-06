@@ -257,6 +257,29 @@ int main() {
 			}
 		}
 
+		///for convex hull
+		//vector<vector<Point> > hull(contours.size());
+//		for (int i = 0; i < contours.size(); i++) {
+//			convexHull(Mat(contours[i]), hull[i], false);
+//		}
+
+		vector<vector<Point> > hull(contours.size());
+		for (int i = 0; i < contours.size(); i++) {
+			convexHull(Mat(contours[i]), hull[i], false);
+		}
+
+		Mat drawing2 = Mat::zeros(threshold_output.size(), CV_8UC3);
+
+		drawContours(drawing2, contours, BBindex, Scalar(0, 255, 0), 1, 8,
+				vector<Vec4i>(), 0, Point());
+		drawContours(drawing2, hull, BBindex, Scalar(255, 0, 255), 1, 8,
+				vector<Vec4i>(), 0, Point());
+
+		/// Show in a window
+		namedWindow("Hull demo", CV_WINDOW_AUTOSIZE);
+		imshow("Hull demo", drawing2);
+		waitKey(0);
+
 		/// Draw polygonal contour + bonding rects + circles
 
 		Mat drawing = Mat::zeros(threshold_output.size(), CV_8UC3);
@@ -615,10 +638,11 @@ int main() {
 //	pnts3D.at<double>(2, 0) = pnts3D.at<double>(2, 0) / pnts3D.at<double>(3, 0);
 //	pnts3D.at<double>(3, 0) = pnts3D.at<double>(3, 0) / pnts3D.at<double>(3, 0);
 
-	for (int a = 0; a < 3; a++) {
+	for (int a = 0; a < N - 1; a++) {
 		Mat temp(4, pnts[0].pnts2d.size(), CV_32F);
-		triangulatePoints(M[0], M[a+1], pnts[0].pnts2d, pnts[a+1].pnts2d, temp);
-		//triangulatePoints(M[a], M[a+1], pnts[a].pnts2d, pnts[a+1].pnts2d, temp);
+		//triangulatePoints(M[0], M[a+1], pnts[0].pnts2d, pnts[a+1].pnts2d, temp);
+		triangulatePoints(M[a], M[a + 1], pnts[a].pnts2d, pnts[a + 1].pnts2d,
+				temp);
 		//temp = temp.t();
 		for (int k = 0; k < temp.cols; k++) {
 			for (int j = 0; j < 4; j++) {
@@ -650,7 +674,7 @@ int main() {
 			<< endl;
 	cout << "max is: [ " << xmax << ", " << ymax << ", " << zmax << " ]"
 			<< endl;
-	cout<<points3D[0].col(0)<<endl;
+	cout << points3D[0].col(0) << endl;
 
 //	cout << pnts3D << endl;
 //	cout << pnts3D.size() << endl;
